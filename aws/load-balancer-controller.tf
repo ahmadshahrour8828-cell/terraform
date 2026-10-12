@@ -2,7 +2,7 @@
 resource "aws_iam_policy" "load_balancer_controller" {
   name        = "${var.cluster_name}-AWSLoadBalancerControllerPolicy"
   description = "Permissions for AWS Load Balancer Controller"
-  policy      = file("${path.module}/iam_policy.json")
+  policy      = file("./iam_policy.json")
 }
 
 data "aws_iam_policy_document" "lbc_assume_role" {
@@ -69,7 +69,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "region"
-    value = var.region
+    value = var.aws_region
   }
 
   set {
