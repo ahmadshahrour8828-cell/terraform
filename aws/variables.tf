@@ -88,7 +88,7 @@ variable "application_desired_size" {
 
 variable "application_max_size" {
   type    = number
-  default = 4
+  default = 3
 }
 
 variable "git_repo_url" {
