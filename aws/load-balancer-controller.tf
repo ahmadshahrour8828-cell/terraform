@@ -2,7 +2,7 @@
 resource "aws_iam_policy" "load_balancer_controller" {
   name        = "${var.cluster_name}-AWSLoadBalancerControllerPolicy"
   description = "Permissions for AWS Load Balancer Controller"
-  policy      = file("./iam_policy.json")
+  policy      = file("${path.module}/iam_policy.json")
 }
 
 data "aws_iam_policy_document" "lbc_assume_role" {
@@ -39,7 +39,7 @@ resource "aws_iam_role_policy_attachment" "load_balancer_controller" {
   policy_arn = aws_iam_policy.load_balancer_controller.arn
 }
 
-resource "kubernetes_service_account" "load_balancer_controller" {
+resource "kubernetes_service_account_v1" "load_balancer_controller" {
   metadata {
     name      = "aws-load-balancer-controller"
     namespace = "kube-system"
@@ -62,33 +62,18 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace  = "kube-system"
   version    = "1.14.0"
 
-  set {
-    name  = "clusterName"
-    value = aws_eks_cluster.this.name
-  }
-
-  set {
-    name  = "region"
-    value = var.aws_region
-  }
-
-  set {
-    name  = "vpcId"
-    value = var.vpc_id
-  }
-
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = kubernetes_service_account.load_balancer_controller.metadata[0].name
-  }
+  values = [yamlencode({
+    clusterName = aws_eks_cluster.this.name
+    region      = var.aws_region
+    vpcId       = var.vpc_id
+    serviceAccount = {
+      create = false
+      name   = kubernetes_service_account_v1.load_balancer_controller.metadata[0].name
+    }
+  })]
 
   depends_on = [
-    kubernetes_service_account.load_balancer_controller,
+    kubernetes_service_account_v1.load_balancer_controller,
     aws_iam_role_policy_attachment.load_balancer_controller
   ]
 }
