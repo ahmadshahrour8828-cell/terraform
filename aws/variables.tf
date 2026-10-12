@@ -1,4 +1,4 @@
-variable "region" {
+variable "aws_region" {
   description = "AWS region where the existing VPC and EKS cluster will reside."
   type        = string
   default     = "eu-central-1"
